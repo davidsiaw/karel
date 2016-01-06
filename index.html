@@ -1,0 +1,242 @@
+<html>
+<head>
+<title>karel</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+<style>
+.orange
+{
+  padding: 3px;
+  border-width: 1px;
+  border-color: #FF7400;
+  border-style: solid;
+  background-color: #FFD16E ;
+}
+</style>
+</head>
+<body>
+
+<script type="text/javascript" src="js/gamepad.js"></script>
+<script type="text/javascript" src="js/Update.js"></script>
+<script type="text/javascript" src="js/MapCamera.js"></script>
+<script type="text/javascript" src="js/MapView.js"></script>
+<script type="text/javascript" src="js/CanvasMapView.js"></script>
+<script type="text/javascript" src="js/MapModel.js"></script>
+<script type="text/javascript" src="js/KeyWatcher.js"></script>
+<script type="text/javascript" src="js/DialogView.js"></script>
+<script type="text/javascript" src="js/World.js"></script>
+<script type="text/javascript" src="js/game/SimpleInput.js"></script>
+<script type="text/javascript" src="js/game/GameState.js"></script>
+
+
+
+<script type="text/javascript">
+
+function pushAnimatedTile(tileInfo, x, y, animSpacingX)
+{
+	var coords = [];
+
+	for (var i=0; i<4; i++)
+	{
+		coords.push({x: x + animSpacingX * i, y: y});
+	}
+
+	tileInfo.push(
+	{
+		type: "simple",
+		coords: coords
+	});
+}
+
+function pushAutotile(tinfo, tileSize, offsetX, offsetY)
+{
+
+	var tileIndex = tinfo.length;
+
+	pushAnimatedTile(tinfo, (2+offsetX)*tileSize, (1+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (2+offsetX)*tileSize, (2+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (2+offsetX)*tileSize, (3+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (1+offsetX)*tileSize, (3+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (0+offsetX)*tileSize, (3+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (0+offsetX)*tileSize, (2+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (0+offsetX)*tileSize, (1+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (1+offsetX)*tileSize, (1+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (1+offsetX)*tileSize, (2+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (2+offsetX)*tileSize, (0+offsetY)*tileSize, 3*tileSize);
+	pushAnimatedTile(tinfo, (0+offsetX)*tileSize, (0+offsetY)*tileSize, 3*tileSize);
+
+	var indexes =[]
+	for (var i=0;i<12;i++)
+	{
+		indexes.push(i+tileIndex);
+	}
+
+	tileInfo.push(
+	{
+		type: "autotile12",
+		passable: Passable.Air,
+		indexes: indexes
+	});
+}
+
+var tileInfo = [];
+
+tileInfo.push(
+{
+	type: "simple",
+	passable: Passable.Air | Passable.Ground,
+	coords:[ {x:0, y:0} ]
+});
+
+pushAutotile(tileInfo, 32, 0, 0);
+
+
+
+function Map(w,h)
+{
+	var tiles = {};
+	this.width = w;
+	this.height = h;
+	
+	function makeTileKey(x,y) {
+		return x + "," + y;
+	}
+	
+	this.map = function(x,y)
+	{
+		if (tiles[makeTileKey(x,y)])
+		{
+			return tiles[makeTileKey(x,y)];
+		}
+		return 0;
+	}
+	
+	this.setTile = function (x,y,tile)
+	{
+		tiles[makeTileKey(x,y)] = tile;
+	}
+	return this;
+}
+
+var mapInfo = new Map(24,12);
+
+var charImg = new Image();
+var tilesetImg = new Image();
+
+charImg.src = "res/mm.png";
+charImg.onload = function ()
+{
+	tilesetImg.src = "res/grass.png";
+	tilesetImg.onload = function()
+	{
+		startGame();
+	}
+}
+
+function startGame()
+{
+	var input = new SimpleInput();
+	var world = new World(tilesetImg, charImg, tileInfo, mapInfo);
+	
+	var map = new CanvasMapView(10, 10, 0, 800, 420, world.getModel());
+	var dialog = new DialogView(10, 10, 1, 800, 420, "res/midJQ.png");
+	
+	document.body.appendChild(dialog.getDiv());
+	document.body.appendChild(map.getDiv());
+	
+	var gameState = new GameState(input, world, map);
+	
+	var lastUpdateTime = new Date();
+
+	setInterval(function()
+	{
+	    var timeBetween = new Date() - lastUpdateTime;
+	    if (timeBetween > 200)
+	    {
+	    	// 200ms updates
+			lastUpdateTime = new Date();
+	    }
+
+		input.checkInputs();
+		dialog.update();
+		map.update();
+
+		
+	}, 16)
+
+
+	function createButton(context, name, x, y, func)
+	{
+	    var button = document.createElement("input");
+	    button.type = "button";
+	    button.value = name;
+	    button.onclick = func;
+	    button.style.position = "absolute";
+	    button.style.left = x+"px";
+	    button.style.top = y+"px";
+	    context.appendChild(button);
+	}
+
+	function createDraggable(context, name, x, y, func)
+	{
+	    var div = document.createElement("div");
+	    div.innerHTML = name;
+	    div.draggable = true;
+	    div.style.position = "absolute";
+	    div.style.left = x+"px";
+	    div.style.top = y+"px";
+	    div.className = "orange";
+	    div.onclick = func;
+	    context.appendChild(div);
+	}
+
+
+	var mainChar = 0;
+	
+	var mainScript =
+	[
+		Script.staticCamera(-0.5,-0.7),
+		Script.addCharacter(0,0,0,[Character.setSlow(64)], function(charId){ mainChar = charId; }),
+		Script.hideDialog(dialog),
+	];
+	
+	gameState.runScript(mainScript);
+
+
+	createButton(document.body, "Down", 20, 450, function()
+	{
+		gameState.runScript([Character.walkDown], mainChar);
+	});
+
+
+	createDraggable(document.body, "Down", 100, 450, function()
+	{
+		gameState.runScript([Character.walkDown], mainChar);
+	});
+
+	createDraggable(document.body, "Up", 150, 450, function()
+	{
+		gameState.runScript([Character.walkUp], mainChar);
+	});
+
+
+	createDraggable(document.body, "Left", 200, 450, function()
+	{
+		gameState.runScript([Character.walkLeft], mainChar);
+	});
+
+
+	createDraggable(document.body, "Right", 250, 450, function()
+	{
+		gameState.runScript([Character.walkRight], mainChar);
+	});
+
+
+}
+
+
+</script>
+
+
+</body>
+</html>
