@@ -21,7 +21,7 @@
 		<block type="cmd_move_up"></block>
 		<block type="cmd_move_left"></block>
 		<block type="cmd_move_right"></block>
-		<block type="cmd_move_right"></block>
+		<block type="cmd_loop"></block>
 </xml>
 
 <script src="blockly/blockly_compressed.js"></script>
@@ -288,6 +288,21 @@ function startGame()
 	  }
 	};
 
+	Blockly.Blocks['cmd_loop'] = {
+	  init: function() {
+	    this.appendStatementInput("times")
+	        .setCheck("COMMAND")
+	        .appendField("Loop")
+	        .appendField(new Blockly.FieldTextInput("0"), "loop_count")
+	        .appendField("times");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(120);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
 	var workspace = Blockly.inject('blocklyDiv', {toolbox: document.getElementById('toolbox')});
 
 	var defaultXml =
@@ -299,13 +314,11 @@ function startGame()
 	var xml = Blockly.Xml.textToDom(defaultXml);
     Blockly.Xml.domToWorkspace(workspace, xml);
 
-	createButton(document.body, "Run", 620, 450, function()
-	{
-		var tops = workspace.getTopBlocks(false).find(function(x){ return x.type === "master_block" });
-
+    function convert_blocks_to_script(top)
+    {
 		var script = [];
 
-		var curr = tops.childBlocks_[0]; 
+		var curr = top; 
 		while(curr)
 		{
 			switch(curr.type)
@@ -322,9 +335,23 @@ function startGame()
 				case "cmd_move_right":
 				script.push(Character.walkRight);
 				break;
+				case "cmd_loop":
+				var count = curr.getFieldValue("loop_count");
+				console.log(top);
+				script.push(Script.run(count, convert_blocks_to_script(curr.getChildren()[0] ) ));
+				break;
 			}
-			curr = curr.childBlocks_[0];
+			curr = curr.getNextBlock();
 		}
+
+		return script;
+    }
+
+	createButton(document.body, "Run", 620, 450, function()
+	{
+		var tops = workspace.getTopBlocks(false).find(function(x){ return x.type === "master_block" });
+
+		var script = convert_blocks_to_script(tops.getNextBlock());
 
 		gameState.runScript(script, mainChar);
 

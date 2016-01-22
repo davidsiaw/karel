@@ -552,7 +552,15 @@ var Script =
                 }
             }
 
-            runTheScript(checkEnd);
+            if (times > 0)
+            {
+                runTheScript(checkEnd);
+            }
+            else
+            {
+                next();
+            }
+            
         }
     },
     
