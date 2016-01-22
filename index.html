@@ -16,6 +16,19 @@
 </head>
 <body>
 
+<xml id="toolbox" style="display: none">
+		<block type="cmd_move_down"></block>
+		<block type="cmd_move_up"></block>
+		<block type="cmd_move_left"></block>
+		<block type="cmd_move_right"></block>
+		<block type="cmd_move_right"></block>
+</xml>
+
+<script src="blockly/blockly_compressed.js"></script>
+<script src="blockly/blocks_compressed.js"></script>
+<script src="blockly/msg/js/en.js"></script>
+
+
 <script type="text/javascript" src="js/gamepad.js"></script>
 <script type="text/javascript" src="js/Update.js"></script>
 <script type="text/javascript" src="js/MapCamera.js"></script>
@@ -203,10 +216,120 @@ function startGame()
 	gameState.runScript(mainScript);
 
 
-	createButton(document.body, "Down", 20, 450, function()
+
+	var commandBlock = document.createElement('div');
+	commandBlock.id = 'blocklyDiv';
+	commandBlock.style.position = "absolute";
+	commandBlock.style.top = "450px";
+	commandBlock.style.left = "10px";
+	commandBlock.style.width = "600px";
+	commandBlock.style.height = "250px";
+	document.getElementsByTagName('body')[0].appendChild(commandBlock);
+
+
+	Blockly.Blocks['master_block'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Start");
+	    this.setNextStatement(true);
+	    this.setColour(0);
+
+	    Blockly.BlockSvg.START_HAT = true
+	    this.setTooltip('Connect blocks to this to make Vivi move');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	Blockly.Blocks['cmd_move_down'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Move Down");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	Blockly.Blocks['cmd_move_up'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Move Up");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	Blockly.Blocks['cmd_move_left'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Move Left");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	Blockly.Blocks['cmd_move_right'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Move Right");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	var workspace = Blockly.inject('blocklyDiv', {toolbox: document.getElementById('toolbox')});
+
+	var defaultXml =
+	  '<xml>' +
+	  '  <block type="master_block" deletable="false" x="140" y="20">' +
+	  '  </block>' +
+	  '</xml>';
+
+	var xml = Blockly.Xml.textToDom(defaultXml);
+    Blockly.Xml.domToWorkspace(workspace, xml);
+
+	createButton(document.body, "Run", 620, 450, function()
 	{
-		gameState.runScript([Character.walkDown], mainChar);
+		var tops = workspace.getTopBlocks(false).find(function(x){ return x.type === "master_block" });
+
+		var script = [];
+
+		var curr = tops.childBlocks_[0]; 
+		while(curr)
+		{
+			switch(curr.type)
+			{
+				case "cmd_move_down":
+				script.push(Character.walkDown);
+				break;
+				case "cmd_move_left":
+				script.push(Character.walkLeft);
+				break;
+				case "cmd_move_up":
+				script.push(Character.walkUp);
+				break;
+				case "cmd_move_right":
+				script.push(Character.walkRight);
+				break;
+			}
+			curr = curr.childBlocks_[0];
+		}
+
+		gameState.runScript(script, mainChar);
+
 	});
+/*
 
 
 	createDraggable(document.body, "Down", 100, 450, function()
@@ -230,7 +353,7 @@ function startGame()
 	{
 		gameState.runScript([Character.walkRight], mainChar);
 	});
-
+*/
 
 }
 
