@@ -188,6 +188,7 @@ function startGame()
 	    button.style.left = x+"px";
 	    button.style.top = y+"px";
 	    context.appendChild(button);
+	    return button;
 	}
 
 	function createDraggable(context, name, x, y, func)
@@ -216,6 +217,13 @@ function startGame()
 	gameState.runScript(mainScript);
 
 
+	var blocklyArea = document.createElement('div');
+	blocklyArea.id = 'blocklyArea';
+	blocklyArea.style.position = "absolute";
+	blocklyArea.style.top = "450px";
+	blocklyArea.style.left = "10px";
+	blocklyArea.style.flex = "0 1 30px;";
+	document.getElementsByTagName('body')[0].appendChild(blocklyArea);
 
 	var commandBlock = document.createElement('div');
 	commandBlock.id = 'blocklyDiv';
@@ -226,6 +234,37 @@ function startGame()
 	commandBlock.style.height = "250px";
 	document.getElementsByTagName('body')[0].appendChild(commandBlock);
 
+	var button = createButton(document.body, "Run", 820, 450, function()
+	{
+		var tops = workspace.getTopBlocks(false).find(function(x){ return x.type === "master_block" });
+
+		var script = convert_blocks_to_script(tops.getNextBlock());
+
+		gameState.runScript(script, mainChar);
+
+	});
+
+	var onresize = function(e) {
+	    // Compute the absolute coordinates and dimensions of blocklyArea.
+	    var element = blocklyArea;
+	    var x = 0;
+	    var y = 0;
+	    do {
+	      x += element.offsetLeft;
+	      y += element.offsetTop;
+	      element = element.offsetParent;
+	    } while (element);
+	    // Position commandBlock over blocklyArea.
+	    commandBlock.style.left = x + 'px';
+	    commandBlock.style.top = y + 'px';
+	    commandBlock.style.width = (document.body.clientWidth - 80) + 'px';
+	    commandBlock.style.height = (document.body.clientHeight - 460) + 'px';
+
+	    button.style.left = (document.body.clientWidth - 50) + 'px';
+
+	  };
+	  window.addEventListener('resize', onresize, false);
+	  onresize();
 
 	Blockly.Blocks['master_block'] = {
 	  init: function() {
@@ -337,7 +376,6 @@ function startGame()
 				break;
 				case "cmd_loop":
 				var count = curr.getFieldValue("loop_count");
-				console.log(top);
 				script.push(Script.run(count, convert_blocks_to_script(curr.getChildren()[0] ) ));
 				break;
 			}
@@ -347,15 +385,6 @@ function startGame()
 		return script;
     }
 
-	createButton(document.body, "Run", 620, 450, function()
-	{
-		var tops = workspace.getTopBlocks(false).find(function(x){ return x.type === "master_block" });
-
-		var script = convert_blocks_to_script(tops.getNextBlock());
-
-		gameState.runScript(script, mainChar);
-
-	});
 /*
 
 
