@@ -17,10 +17,17 @@
 <body>
 
 <xml id="toolbox" style="display: none">
+
+		<block type="cmd_rotate_left"></block>
+		<block type="cmd_rotate_right"></block>
+		<block type="cmd_move_forward"></block>
+
+		<!--
 		<block type="cmd_move_down"></block>
 		<block type="cmd_move_up"></block>
 		<block type="cmd_move_left"></block>
 		<block type="cmd_move_right"></block>
+		-->
 		<block type="cmd_loop"></block>
 </xml>
 
@@ -327,6 +334,42 @@ function startGame()
 	  }
 	};
 
+	Blockly.Blocks['cmd_rotate_right'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Rotate Right");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	Blockly.Blocks['cmd_rotate_left'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Rotate Left");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
+	Blockly.Blocks['cmd_move_forward'] = {
+	  init: function() {
+	    this.appendDummyInput()
+	        .appendField("Move Forward");
+	    this.setPreviousStatement(true, "COMMAND");
+	    this.setNextStatement(true, "COMMAND");
+	    this.setColour(0);
+	    this.setTooltip('');
+	    this.setHelpUrl('http://www.example.com/');
+	  }
+	};
+
 	Blockly.Blocks['cmd_loop'] = {
 	  init: function() {
 	    this.appendStatementInput("times")
@@ -362,6 +405,18 @@ function startGame()
 		{
 			switch(curr.type)
 			{
+				case "cmd_rotate_right":
+				script.push(Character.rotateRight);
+				break;
+
+				case "cmd_rotate_left":
+				script.push(Character.rotateLeft);
+				break;
+
+				case "cmd_move_forward":
+				script.push(Character.walkForward);
+				break;
+
 				case "cmd_move_down":
 				script.push(Character.walkDown);
 				break;

@@ -224,6 +224,34 @@ var Character =
             next();
         });
     },
+
+    rotateLeft: function(gameState, next)
+    {
+        // up,right,down,left
+        // left,up,right,down
+
+        // 0, 1, 2, 3
+        // 3, 1, 2, 0
+        var transform = [3, 0, 1, 2];
+
+        var rotation = gameState.world.getCharacterRotation(gameState.currChar);
+        gameState.world.rotateCharacter(gameState.currChar, transform[rotation]);
+        next();
+    },
+
+    rotateRight: function(gameState, next)
+    {
+        // up,right,down,left
+        // right,down,left,up
+
+        // 0, 1, 2, 3
+        // 1, 2, 3, 0
+        var transform = [1, 2, 3, 0];
+
+        var rotation = gameState.world.getCharacterRotation(gameState.currChar);
+        gameState.world.rotateCharacter(gameState.currChar, transform[rotation]);
+        next();
+    },
     
     setSlow: function(slowness)
     {
@@ -242,7 +270,8 @@ var Character =
     	gameState.map.setCamera(camera);
     	next();
     },
-    
+
+
     assignDirectionalControl: function(gameState, next)
     {
     	function walkAroundActions(theChar)
